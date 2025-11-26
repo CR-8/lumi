@@ -172,7 +172,8 @@ export function GeminiInsights({ analysis }: GeminiInsightsProps) {
                     <h3 className="font-semibold text-sm">Typography</h3>
                   </div>
                   <p className="text-sm text-muted-foreground pl-6 line-clamp-2">
-                    {analysis.typographyAnalysis}
+                    {analysis.typographyAnalysis.fontStyle} - Readability:{" "}
+                    {analysis.typographyAnalysis.readabilityScore}/100
                   </p>
                 </div>
               </div>
@@ -183,7 +184,7 @@ export function GeminiInsights({ analysis }: GeminiInsightsProps) {
                   <h3 className="font-semibold text-sm">Color Scheme</h3>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
-                  {analysis.colorSchemeAnalysis}
+                  {analysis.colorSchemeAnalysis.effectiveness}
                 </p>
               </div>
 
@@ -193,17 +194,18 @@ export function GeminiInsights({ analysis }: GeminiInsightsProps) {
                   <h3 className="font-semibold text-sm">Layout</h3>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
-                  {analysis.layoutAnalysis}
+                  Grid: {analysis.layoutStructure.gridSystem} | Alignment:{" "}
+                  {analysis.layoutStructure.alignmentScore}/100
                 </p>
               </div>
 
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-center gap-2">
                   <Eye className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="font-semibold text-sm">User Experience</h3>
+                  <h3 className="font-semibold text-sm">Summary</h3>
                 </div>
                 <p className="text-sm text-muted-foreground pl-6">
-                  {analysis.userExperience}
+                  {analysis.summary.verdict}
                 </p>
               </div>
             </TabsContent>

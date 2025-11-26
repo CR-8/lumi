@@ -15,7 +15,13 @@ import {
   Layers,
   Sparkles,
   Activity,
-  Users,
+  Smartphone,
+  Grid3x3,
+  MousePointer,
+  Brain,
+  TrendingUp,
+  Target,
+  Heart,
 } from "lucide-react";
 
 interface BentoDashboardProps {
@@ -248,53 +254,56 @@ export function BentoDashboard({ data }: BentoDashboardProps) {
         </BentoCard>
 
         {/* Target Audience */}
-        <BentoCard className="col-span-1">
-          <div className="flex flex-col h-full justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Target Audience</h3>
-              </div>
-              <p className="text-2xl font-bold mb-1">
-                {data.audience.detected[0]?.category || "General"}
-              </p>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {data.gemini?.targetAudienceMatch ||
-                  data.audience.suggestions.slice(0, 1).join(" • ")}
-              </p>
+        <BentoCard className="col-span-1 md:col-span-2 lg:col-span-2">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold">
+                Target Audience & Industry
+              </h3>
             </div>
-            {data.audience.detected[0]?.confidence && (
-              <div className="mt-4">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Confidence</span>
-                  <span className="font-medium">
-                    {Math.round(data.audience.detected[0].confidence * 100)}%
-                  </span>
-                </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{
-                      width: `${Math.round(
-                        data.audience.detected[0].confidence * 100
-                      )}%`,
-                    }}
-                  />
-                </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Best Suited For
+                </p>
+                <p className="text-sm line-clamp-2">
+                  {data.gemini?.targetAudienceMatch ||
+                    data.audience.suggestions.slice(0, 1).join(" • ")}
+                </p>
               </div>
-            )}
+              {data.gemini?.industryPrediction &&
+                data.gemini.industryPrediction.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Industry Prediction
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {data.gemini.industryPrediction.map((industry, idx) => (
+                        <Badge
+                          key={idx}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {industry}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
           </div>
         </BentoCard>
 
         {/* Gemini UI Insights */}
         {data.gemini && (
-          <BentoCard className="col-span-1 md:col-span-2 lg:col-span-2">
+          <BentoCard className="col-span-1">
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-4 h-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold">AI Insights</h3>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">UI Type</p>
                   <p className="text-sm font-medium">{data.gemini.uiType}</p>
@@ -307,14 +316,125 @@ export function BentoDashboard({ data }: BentoDashboardProps) {
                     {data.gemini.designSystem}
                   </p>
                 </div>
+              </div>
+            </div>
+          </BentoCard>
+        )}
+
+        {/* Cognitive Load */}
+        {data.gemini?.cognitiveLoad && (
+          <BentoCard className="col-span-1">
+            <BentoStatsCard
+              title="Cognitive Load"
+              value={data.gemini.cognitiveLoad.level}
+              icon={<Brain className="w-5 h-5" />}
+              trend={getTrend(data.gemini.cognitiveLoad.score)}
+              description={`${data.gemini.cognitiveLoad.score}/100 score`}
+            />
+          </BentoCard>
+        )}
+
+        {/* Interaction Clarity */}
+        {data.gemini?.interactionClarity && (
+          <BentoCard className="col-span-1">
+            <BentoStatsCard
+              title="Interaction Clarity"
+              value={`${data.gemini.interactionClarity.score}%`}
+              icon={<MousePointer className="w-5 h-5" />}
+              trend={getTrend(data.gemini.interactionClarity.score)}
+              description={`${data.gemini.interactionClarity.issues.length} issues found`}
+            />
+          </BentoCard>
+        )}
+
+        {/* Mobile Friendliness */}
+        {data.gemini?.mobileFriendliness && (
+          <BentoCard className="col-span-1">
+            <BentoStatsCard
+              title="Mobile Friendly"
+              value={`${data.gemini.mobileFriendliness.score}%`}
+              icon={<Smartphone className="w-5 h-5" />}
+              trend={getTrend(data.gemini.mobileFriendliness.score)}
+              description={`${data.gemini.mobileFriendliness.issues.length} issues detected`}
+            />
+          </BentoCard>
+        )}
+
+        {/* Layout Structure */}
+        {data.gemini?.layoutStructure && (
+          <BentoCard className="col-span-1 md:col-span-2 lg:col-span-2">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-2 mb-4">
+                <Grid3x3 className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Layout Structure</h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">
-                    User Experience
+                    Grid System
                   </p>
-                  <p className="text-xs line-clamp-2">
-                    {data.gemini.userExperience}
+                  <p className="text-sm font-medium line-clamp-2">
+                    {data.gemini.layoutStructure.gridSystem}
                   </p>
                 </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Alignment
+                  </p>
+                  <p className="text-sm font-medium">
+                    {data.gemini.layoutStructure.alignmentScore}/100
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Whitespace
+                  </p>
+                  <p className="text-sm font-medium">
+                    {data.gemini.layoutStructure.whitespaceScore}/100
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Consistency
+                  </p>
+                  <p className="text-sm font-medium">
+                    {data.gemini.layoutStructure.consistencyScore}/100
+                  </p>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        )}
+
+        {/* Emotional Tone */}
+        {data.gemini?.emotionalTone && (
+          <BentoCard className="col-span-1">
+            <div className="flex flex-col h-full justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold">Emotional Tone</h3>
+                </div>
+                <p className="text-xs mb-2 line-clamp-2">
+                  {data.gemini.emotionalTone.feel}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Heart
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < data.gemini!.emotionalTone.rating
+                          ? "fill-red-500 text-red-500"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {data.gemini.emotionalTone.rating}/5
+                </span>
               </div>
             </div>
           </BentoCard>
@@ -560,6 +680,221 @@ export function BentoDashboard({ data }: BentoDashboardProps) {
             />
           </BentoCard>
         )}
+
+        {/* Summary Card */}
+        {data.gemini?.summary && (
+          <BentoCard className="col-span-1 md:col-span-3 lg:col-span-3">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Summary & Verdict</h3>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm">{data.gemini.summary.verdict}</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">
+                      Top Problems
+                    </p>
+                    <ul className="space-y-1.5">
+                      {data.gemini.summary.top3Problems.map((problem, idx) => (
+                        <li
+                          key={idx}
+                          className="text-xs flex items-start gap-2"
+                        >
+                          <AlertCircle className="w-3 h-3 text-red-500 shrink-0 mt-0.5" />
+                          <span>{problem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">
+                      Top Fixes
+                    </p>
+                    <ul className="space-y-1.5">
+                      {data.gemini.summary.top3Fixes.map((fix, idx) => (
+                        <li
+                          key={idx}
+                          className="text-xs flex items-start gap-2"
+                        >
+                          <CheckCircle className="w-3 h-3 text-green-500 shrink-0 mt-0.5" />
+                          <span>{fix}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        )}
+
+        {/* Component Analysis */}
+        {data.gemini?.componentAnalysis &&
+          data.gemini.componentAnalysis.length > 0 && (
+            <BentoCard className="col-span-1 md:col-span-3 lg:col-span-3 row-span-2">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold">Component Analysis</h3>
+                  <Badge variant="outline" className="rounded-full">
+                    {data.gemini.componentAnalysis.length} components
+                  </Badge>
+                </div>
+                <div className="space-y-3 overflow-y-auto pr-2">
+                  {data.gemini.componentAnalysis.map((comp, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="text-sm font-medium">
+                          {comp.component}
+                        </h4>
+                        {comp.wcagViolation &&
+                          !comp.wcagViolation
+                            .toLowerCase()
+                            .includes("none") && (
+                            <Badge
+                              variant="destructive"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              WCAG
+                            </Badge>
+                          )}
+                      </div>
+                      {comp.issues && comp.issues.length > 0 && (
+                        <ul className="text-xs text-muted-foreground space-y-1 mb-2">
+                          {comp.issues.map((issue, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-yellow-500 shrink-0 mt-0.5">
+                                •
+                              </span>
+                              <span>{issue}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="text-xs">
+                        <span className="font-medium text-primary">
+                          Suggestion:
+                        </span>{" "}
+                        <span className="text-muted-foreground">
+                          {comp.suggestion}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                  \n{" "}
+                </div>
+              </div>
+            </BentoCard>
+          )}
+
+        {/* Summary Card */}
+        {data.gemini?.summary && (
+          <BentoCard className="col-span-1 md:col-span-3 lg:col-span-3">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Summary & Verdict</h3>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm">{data.gemini.summary.verdict}</p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Top Problems
+                    </p>
+                    <ul className="space-y-1">
+                      {data.gemini.summary.top3Problems.map((problem, idx) => (
+                        <li
+                          key={idx}
+                          className="text-xs flex items-start gap-2"
+                        >
+                          <AlertCircle className="w-3 h-3 text-red-500 shrink-0 mt-0.5" />
+                          <span>{problem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Top Fixes
+                    </p>
+                    <ul className="space-y-1">
+                      {data.gemini.summary.top3Fixes.map((fix, idx) => (
+                        <li
+                          key={idx}
+                          className="text-xs flex items-start gap-2"
+                        >
+                          <CheckCircle className="w-3 h-3 text-green-500 shrink-0 mt-0.5" />
+                          <span>{fix}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+        )}
+
+        {/* Component Analysis */}
+        {data.gemini?.componentAnalysis &&
+          data.gemini.componentAnalysis.length > 0 && (
+            <BentoCard className="col-span-1 md:col-span-3 lg:col-span-3 row-span-2">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold">Component Analysis</h3>
+                  <Badge variant="outline" className="rounded-full">
+                    {data.gemini.componentAnalysis.length} components
+                  </Badge>
+                </div>
+                <div className="space-y-3 overflow-y-auto">
+                  {data.gemini.componentAnalysis.map((comp, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="text-sm font-medium">
+                          {comp.component}
+                        </h4>
+                        {comp.wcagViolation &&
+                          comp.wcagViolation !==
+                            "None visible, contrast is good." &&
+                          comp.wcagViolation !== "None strictly." &&
+                          comp.wcagViolation !==
+                            "None strictly, but borderline for some users with low vision." &&
+                          comp.wcagViolation !==
+                            "None strictly, but readability could be improved." && (
+                            <Badge variant="destructive" className="text-xs">
+                              WCAG Issue
+                            </Badge>
+                          )}
+                      </div>
+                      {comp.issues && comp.issues.length > 0 && (
+                        <ul className="text-xs text-muted-foreground space-y-1 mb-2">
+                          {comp.issues.map((issue, i) => (
+                            <li key={i} className="flex items-start gap-1">
+                              <span className="text-yellow-500 shrink-0">
+                                •
+                              </span>
+                              <span>{issue}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="text-xs text-primary">
+                        <strong>Suggestion:</strong> {comp.suggestion}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </BentoCard>
+          )}
 
         {/* AI Recommendations */}
         <BentoCard className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2">

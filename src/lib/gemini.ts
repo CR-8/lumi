@@ -5,24 +5,66 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 export interface GeminiAnalysis {
   uiType: string;
   designSystem: string;
-  strengths: string[];
-  weaknesses: string[];
-  accessibilityIssues: string[];
-  recommendations: string[];
-  colorSchemeAnalysis: string;
-  layoutAnalysis: string;
-  typographyAnalysis: string;
-  userExperience: string;
-  targetAudienceMatch: string;
+  industryPrediction: string[];
   overallQuality: number;
-  contrastScore: number;
   wcagComplianceScore: number;
+  contrastScore: number;
+  cognitiveLoad: {
+    level: string;
+    score: number;
+    reason: string;
+  };
+  layoutStructure: {
+    gridSystem: string;
+    alignmentScore: number;
+    whitespaceScore: number;
+    consistencyScore: number;
+    layoutIssues: string[];
+  };
+  visualAttentionFlow: string[];
+  interactionClarity: {
+    score: number;
+    issues: string[];
+  };
+  mobileFriendliness: {
+    score: number;
+    issues: string[];
+  };
+  typographyAnalysis: {
+    fontStyle: string;
+    readabilityScore: number;
+    issues: string[];
+  };
+  colorSchemeAnalysis: {
+    effectiveness: string;
+    issues: string[];
+  };
   colorPalette: {
     primary: string[];
     secondary: string[];
     accent: string[];
     text: string[];
     background: string[];
+  };
+  componentAnalysis: Array<{
+    component: string;
+    issues: string[];
+    wcagViolation: string;
+    suggestion: string;
+  }>;
+  accessibilityIssues: string[];
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  targetAudienceMatch: string;
+  summary: {
+    verdict: string;
+    top3Problems: string[];
+    top3Fixes: string[];
+  };
+  emotionalTone: {
+    feel: string;
+    rating: number;
   };
 }
 
@@ -118,42 +160,16 @@ function sanitizeJSON(jsonStr: string): string {
 }
 
 function validateAnalysis(data: Record<string, unknown>): GeminiAnalysis {
-  const requiredFields = [
-    "uiType",
-    "designSystem",
-    "strengths",
-    "weaknesses",
-    "accessibilityIssues",
-    "recommendations",
-    "colorSchemeAnalysis",
-    "layoutAnalysis",
-    "typographyAnalysis",
-    "userExperience",
-    "targetAudienceMatch",
-    "overallQuality",
-    "contrastScore",
-    "wcagComplianceScore",
-    "colorPalette",
-  ];
+  // Set defaults for missing fields
+  if (!Array.isArray(data.industryPrediction)) data.industryPrediction = [];
+  if (!Array.isArray(data.strengths)) data.strengths = [];
+  if (!Array.isArray(data.weaknesses)) data.weaknesses = [];
+  if (!Array.isArray(data.accessibilityIssues)) data.accessibilityIssues = [];
+  if (!Array.isArray(data.recommendations)) data.recommendations = [];
+  if (!Array.isArray(data.visualAttentionFlow)) data.visualAttentionFlow = [];
+  if (!Array.isArray(data.componentAnalysis)) data.componentAnalysis = [];
 
-  for (const field of requiredFields) {
-    if (!(field in data)) {
-      throw new Error(`Missing required field: ${field}`);
-    }
-  }
-
-  const arrayFields = [
-    "strengths",
-    "weaknesses",
-    "accessibilityIssues",
-    "recommendations",
-  ];
-  for (const field of arrayFields) {
-    if (!Array.isArray(data[field])) {
-      data[field] = [];
-    }
-  }
-
+  // Validate and set defaults for scores
   if (
     typeof data.overallQuality !== "number" ||
     data.overallQuality < 0 ||
@@ -161,7 +177,6 @@ function validateAnalysis(data: Record<string, unknown>): GeminiAnalysis {
   ) {
     data.overallQuality = 50;
   }
-
   if (
     typeof data.contrastScore !== "number" ||
     data.contrastScore < 0 ||
@@ -169,7 +184,6 @@ function validateAnalysis(data: Record<string, unknown>): GeminiAnalysis {
   ) {
     data.contrastScore = 50;
   }
-
   if (
     typeof data.wcagComplianceScore !== "number" ||
     data.wcagComplianceScore < 0 ||
@@ -178,6 +192,54 @@ function validateAnalysis(data: Record<string, unknown>): GeminiAnalysis {
     data.wcagComplianceScore = 50;
   }
 
+  // Validate nested objects
+  if (typeof data.cognitiveLoad !== "object" || data.cognitiveLoad === null) {
+    data.cognitiveLoad = {
+      level: "Unknown",
+      score: 50,
+      reason: "Not analyzed",
+    };
+  }
+  if (
+    typeof data.layoutStructure !== "object" ||
+    data.layoutStructure === null
+  ) {
+    data.layoutStructure = {
+      gridSystem: "Unknown",
+      alignmentScore: 50,
+      whitespaceScore: 50,
+      consistencyScore: 50,
+      layoutIssues: [],
+    };
+  }
+  if (
+    typeof data.interactionClarity !== "object" ||
+    data.interactionClarity === null
+  ) {
+    data.interactionClarity = { score: 50, issues: [] };
+  }
+  if (
+    typeof data.mobileFriendliness !== "object" ||
+    data.mobileFriendliness === null
+  ) {
+    data.mobileFriendliness = { score: 50, issues: [] };
+  }
+  if (
+    typeof data.typographyAnalysis !== "object" ||
+    data.typographyAnalysis === null
+  ) {
+    data.typographyAnalysis = {
+      fontStyle: "Unknown",
+      readabilityScore: 50,
+      issues: [],
+    };
+  }
+  if (
+    typeof data.colorSchemeAnalysis !== "object" ||
+    data.colorSchemeAnalysis === null
+  ) {
+    data.colorSchemeAnalysis = { effectiveness: "Not analyzed", issues: [] };
+  }
   if (typeof data.colorPalette !== "object" || data.colorPalette === null) {
     data.colorPalette = {
       primary: [],
@@ -186,6 +248,12 @@ function validateAnalysis(data: Record<string, unknown>): GeminiAnalysis {
       text: [],
       background: [],
     };
+  }
+  if (typeof data.summary !== "object" || data.summary === null) {
+    data.summary = { verdict: "Not analyzed", top3Problems: [], top3Fixes: [] };
+  }
+  if (typeof data.emotionalTone !== "object" || data.emotionalTone === null) {
+    data.emotionalTone = { feel: "Neutral", rating: 50 };
   }
 
   return data as unknown as GeminiAnalysis;
@@ -208,48 +276,111 @@ export async function analyzeUIWithGemini(
       },
     });
 
-    const prompt = `You are a UI/UX and accessibility expert. Analyze this UI screenshot and provide a comprehensive analysis in JSON format with the following structure:
+    const prompt = `
+You are a senior UI/UX expert, accessibility auditor, and design systems analyst.
+
+Analyze the provided UI screenshot in detail and return a STRICTLY VALID JSON response in the structure below.
+Do not use markdown. Do not add explanations outside JSON. Do not include any extra text.
+
+Your analysis must be visually inferred ONLY from the screenshot.
+
 {
-  "uiType": "type of UI (e.g., Dashboard, Landing Page, Mobile App, etc.)",
-  "designSystem": "identified design system (e.g., Material Design, iOS, Fluent, Custom)",
-  "strengths": ["list of 3-5 strong points about the design"],
-  "weaknesses": ["list of 3-5 areas that need improvement"],
-  "accessibilityIssues": ["list of potential WCAG and accessibility concerns"],
-  "recommendations": ["list of 5-7 specific actionable recommendations"],
-  "colorSchemeAnalysis": "brief analysis of the color scheme effectiveness",
-  "layoutAnalysis": "analysis of information hierarchy and layout structure",
-  "typographyAnalysis": "analysis of font choices, sizes, and readability",
-  "userExperience": "overall user experience assessment",
-  "targetAudienceMatch": "who this UI is best suited for",
-  "overallQuality": "score from 0-100 representing overall UI quality",
-  "contrastScore": "score from 0-100 representing text-to-background contrast quality (100 = excellent contrast, 0 = poor contrast)",
-  "wcagComplianceScore": "score from 0-100 representing WCAG 2.1 AA compliance level (100 = fully compliant, 0 = non-compliant)",
+  "uiType": "",
+  "designSystem": "",
+  "industryPrediction": [],
+
+  "overallQuality": 0,
+  "wcagComplianceScore": 0,
+  "contrastScore": 0,
+
+  "cognitiveLoad": {
+    "level": "",
+    "score": 0,
+    "reason": ""
+  },
+
+  "layoutStructure": {
+    "gridSystem": "",
+    "alignmentScore": 0,
+    "whitespaceScore": 0,
+    "consistencyScore": 0,
+    "layoutIssues": []
+  },
+
+  "visualAttentionFlow": [],
+  
+  "interactionClarity": {
+    "score": 0,
+    "issues": []
+  },
+
+  "mobileFriendliness": {
+    "score": 0,
+    "issues": []
+  },
+
+  "typographyAnalysis": {
+    "fontStyle": "",
+    "readabilityScore": 0,
+    "issues": []
+  },
+
+  "colorSchemeAnalysis": {
+    "effectiveness": "",
+    "issues": []
+  },
+
   "colorPalette": {
-    "primary": ["#hexcolor1", "#hexcolor2"],
-    "secondary": ["#hexcolor1"],
-    "accent": ["#hexcolor1"],
-    "text": ["#hexcolor1", "#hexcolor2"],
-    "background": ["#hexcolor1"]
+    "primary": [],
+    "secondary": [],
+    "accent": [],
+    "text": [],
+    "background": []
+  },
+
+  "componentAnalysis": [
+    {
+      "component": "",
+      "issues": [],
+      "wcagViolation": "",
+      "suggestion": ""
+    }
+  ],
+
+  "accessibilityIssues": [],
+  "strengths": [],
+  "weaknesses": [],
+  
+  "recommendations": [],
+
+  "targetAudienceMatch": "",
+
+  "summary": {
+    "verdict": "",
+    "top3Problems": [],
+    "top3Fixes": []
+  },
+
+  "emotionalTone": {
+    "feel": "",
+    "rating": 0
   }
 }
 
-Focus on:
-- WCAG compliance issues
-- Color contrast problems (calculate contrastScore based on text/background ratios)
-- Typography and readability
-- Layout and hierarchy
-- Interactive elements visibility
-- Mobile responsiveness indicators
-- Visual consistency
-- User flow clarity
-- Extract exact hex color codes used in the UI for the colorPalette
-
-Scoring guidelines:
-- contrastScore: 80-100 (all text passes WCAG AA), 60-79 (mostly good), 40-59 (some issues), 0-39 (major issues)
-- wcagComplianceScore: Consider text size, contrast ratios, touch targets, focus indicators, ARIA attributes
-- overallQuality: Holistic assessment of design quality, usability, and aesthetics
-
-Provide specific, actionable feedback. Return ONLY valid JSON, no markdown formatting.`;
+IMPORTANT INSTRUCTIONS:
+- Extract exact HEX color values found in the UI image and place them in the colorPalette
+- Evaluate WCAG 2.1 AA compliance (text contrast, focus states, touch targets, hierarchy)
+- Predict attention flow based on layout
+- Detect contrast failures and give approximate contrastScore (0-100)
+- Detect typography style and readability issues
+- Detect spacing/alignment problems
+- Evaluate mobile responsiveness visually
+- Clearly point out interactive element problems (buttons, links, states)
+- Scores must be realistic and consistent with visible issues
+- overallQuality must be based on a weighted average of: contrast, layout, accessibility, typography, and UX clarity
+- All fields must be filled with meaningful data
+- Return ONLY valid JSON, ready for parsing
+`;
 
     const imagePart = {
       inlineData: {
@@ -294,26 +425,37 @@ Provide specific, actionable feedback. Return ONLY valid JSON, no markdown forma
       return {
         uiType: "Rate Limit Exceeded",
         designSystem: "Unable to analyze",
-        strengths: ["Analysis temporarily unavailable due to API rate limits"],
-        weaknesses: ["Please try again in a few minutes"],
-        accessibilityIssues: [
-          "API quota exceeded - unable to perform analysis",
-        ],
-        recommendations: [
-          "Wait 60 seconds before analyzing another image",
-          "Consider upgrading to Gemini API paid tier for higher limits",
-          "Reduce analysis frequency",
-          "Use batch processing with delays between requests",
-          "Monitor usage at https://ai.dev/usage",
-        ],
-        colorSchemeAnalysis: "Rate limit exceeded - analysis unavailable",
-        layoutAnalysis: "Rate limit exceeded - analysis unavailable",
-        typographyAnalysis: "Rate limit exceeded - analysis unavailable",
-        userExperience: "Rate limit exceeded - analysis unavailable",
-        targetAudienceMatch: "Unable to determine due to rate limits",
+        industryPrediction: [],
         overallQuality: 0,
-        contrastScore: 0,
         wcagComplianceScore: 0,
+        contrastScore: 0,
+        cognitiveLoad: {
+          level: "Unknown",
+          score: 0,
+          reason: "API rate limit exceeded",
+        },
+        layoutStructure: {
+          gridSystem: "Unknown",
+          alignmentScore: 0,
+          whitespaceScore: 0,
+          consistencyScore: 0,
+          layoutIssues: ["Unable to analyze due to rate limits"],
+        },
+        visualAttentionFlow: [],
+        interactionClarity: { score: 0, issues: ["API rate limit exceeded"] },
+        mobileFriendliness: {
+          score: 0,
+          issues: ["Unable to analyze due to rate limits"],
+        },
+        typographyAnalysis: {
+          fontStyle: "Unknown",
+          readabilityScore: 0,
+          issues: ["Unable to analyze due to rate limits"],
+        },
+        colorSchemeAnalysis: {
+          effectiveness: "Unable to analyze due to rate limits",
+          issues: ["API quota exceeded"],
+        },
         colorPalette: {
           primary: [],
           secondary: [],
@@ -321,6 +463,30 @@ Provide specific, actionable feedback. Return ONLY valid JSON, no markdown forma
           text: [],
           background: [],
         },
+        componentAnalysis: [],
+        accessibilityIssues: [
+          "API quota exceeded - unable to perform analysis",
+        ],
+        strengths: ["Analysis temporarily unavailable due to API rate limits"],
+        weaknesses: ["Please try again in a few minutes"],
+        recommendations: [
+          "Wait 60 seconds before analyzing another image",
+          "Consider upgrading to Gemini API paid tier for higher limits",
+          "Reduce analysis frequency",
+          "Use batch processing with delays between requests",
+          "Monitor usage at https://ai.dev/usage",
+        ],
+        targetAudienceMatch: "Unable to determine due to rate limits",
+        summary: {
+          verdict: "Analysis unavailable due to API rate limits",
+          top3Problems: ["API quota exceeded"],
+          top3Fixes: [
+            "Wait and try again",
+            "Check API quota",
+            "Upgrade API tier",
+          ],
+        },
+        emotionalTone: { feel: "Unavailable", rating: 0 },
       };
     }
 
@@ -328,24 +494,40 @@ Provide specific, actionable feedback. Return ONLY valid JSON, no markdown forma
     return {
       uiType: "Unknown",
       designSystem: "Custom",
-      strengths: ["Modern appearance", "Functional layout"],
-      weaknesses: ["AI analysis unavailable", "Manual review recommended"],
-      accessibilityIssues: ["Unable to perform automated analysis"],
-      recommendations: [
-        "Perform manual accessibility audit",
-        "Test with screen readers (NVDA, JAWS)",
-        "Verify color contrast ratios manually",
-        "Check keyboard navigation",
-        "Validate WCAG 2.1 AA compliance",
-      ],
-      colorSchemeAnalysis: "Unable to analyze due to processing error",
-      layoutAnalysis: "Unable to analyze due to processing error",
-      typographyAnalysis: "Unable to analyze due to processing error",
-      userExperience: "Unable to assess due to processing error",
-      targetAudienceMatch: "General audience - manual evaluation needed",
+      industryPrediction: [],
       overallQuality: 50,
-      contrastScore: 50,
       wcagComplianceScore: 50,
+      contrastScore: 50,
+      cognitiveLoad: {
+        level: "Medium",
+        score: 50,
+        reason: "Unable to analyze due to processing error",
+      },
+      layoutStructure: {
+        gridSystem: "Unknown",
+        alignmentScore: 50,
+        whitespaceScore: 50,
+        consistencyScore: 50,
+        layoutIssues: ["Unable to analyze due to processing error"],
+      },
+      visualAttentionFlow: [],
+      interactionClarity: {
+        score: 50,
+        issues: ["Unable to analyze due to processing error"],
+      },
+      mobileFriendliness: {
+        score: 50,
+        issues: ["Unable to analyze due to processing error"],
+      },
+      typographyAnalysis: {
+        fontStyle: "Unknown",
+        readabilityScore: 50,
+        issues: ["Unable to analyze due to processing error"],
+      },
+      colorSchemeAnalysis: {
+        effectiveness: "Unable to analyze due to processing error",
+        issues: ["Processing error occurred"],
+      },
       colorPalette: {
         primary: [],
         secondary: [],
@@ -353,6 +535,28 @@ Provide specific, actionable feedback. Return ONLY valid JSON, no markdown forma
         text: [],
         background: [],
       },
+      componentAnalysis: [],
+      accessibilityIssues: ["Unable to perform automated analysis"],
+      strengths: ["Modern appearance", "Functional layout"],
+      weaknesses: ["AI analysis unavailable", "Manual review recommended"],
+      recommendations: [
+        "Perform manual accessibility audit",
+        "Test with screen readers (NVDA, JAWS)",
+        "Verify color contrast ratios manually",
+        "Check keyboard navigation",
+        "Validate WCAG 2.1 AA compliance",
+      ],
+      targetAudienceMatch: "General audience - manual evaluation needed",
+      summary: {
+        verdict: "Unable to analyze due to processing error",
+        top3Problems: ["AI analysis failed"],
+        top3Fixes: [
+          "Perform manual review",
+          "Test with users",
+          "Use WCAG tools",
+        ],
+      },
+      emotionalTone: { feel: "Neutral", rating: 50 },
     };
   }
 }

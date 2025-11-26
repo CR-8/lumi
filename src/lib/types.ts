@@ -19,24 +19,66 @@ export interface AnalysisResult {
 export interface GeminiAnalysis {
   uiType: string;
   designSystem: string;
-  strengths: string[];
-  weaknesses: string[];
-  accessibilityIssues: string[];
-  recommendations: string[];
-  colorSchemeAnalysis: string;
-  layoutAnalysis: string;
-  typographyAnalysis: string;
-  userExperience: string;
-  targetAudienceMatch: string;
+  industryPrediction: string[];
   overallQuality: number;
-  contrastScore: number;
   wcagComplianceScore: number;
+  contrastScore: number;
+  cognitiveLoad: {
+    level: string;
+    score: number;
+    reason: string;
+  };
+  layoutStructure: {
+    gridSystem: string;
+    alignmentScore: number;
+    whitespaceScore: number;
+    consistencyScore: number;
+    layoutIssues: string[];
+  };
+  visualAttentionFlow: string[];
+  interactionClarity: {
+    score: number;
+    issues: string[];
+  };
+  mobileFriendliness: {
+    score: number;
+    issues: string[];
+  };
+  typographyAnalysis: {
+    fontStyle: string;
+    readabilityScore: number;
+    issues: string[];
+  };
+  colorSchemeAnalysis: {
+    effectiveness: string;
+    issues: string[];
+  };
   colorPalette: {
     primary: string[];
     secondary: string[];
     accent: string[];
     text: string[];
     background: string[];
+  };
+  componentAnalysis: Array<{
+    component: string;
+    issues: string[];
+    wcagViolation: string;
+    suggestion: string;
+  }>;
+  accessibilityIssues: string[];
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  targetAudienceMatch: string;
+  summary: {
+    verdict: string;
+    top3Problems: string[];
+    top3Fixes: string[];
+  };
+  emotionalTone: {
+    feel: string;
+    rating: number;
   };
 }
 
