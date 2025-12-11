@@ -157,6 +157,11 @@
   .shadow-medium {
     box-shadow: var(--shadow-medium);
   }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer utilities {
@@ -170,6 +175,15 @@
     @apply hover:scale-[1.02] hover:shadow-lg transition-all duration-300;
   }
 
+  /* iOS-style glassmorphism */
+  .glass {
+    @apply bg-card/60 backdrop-blur-xl border border-border/40;
+  }
+
+  .glass-strong {
+    @apply bg-card/80 backdrop-blur-2xl border border-border/50;
+  }
+
   /* Gradient backgrounds */
   .bg-gradient-radial {
     background-image: radial-gradient(
@@ -177,4 +191,55 @@
       var(--tw-gradient-stops)
     );
   }
+  
+  /* Text gradient animation */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+
+  /* Staggered animations for bento cards */
+  .bento-card-animate {
+    animation: slide-up 0.5s ease-out both;
+  }
+
+  .bento-card-animate:nth-child(1) { animation-delay: 0.05s; }
+  .bento-card-animate:nth-child(2) { animation-delay: 0.1s; }
+  .bento-card-animate:nth-child(3) { animation-delay: 0.15s; }
+  .bento-card-animate:nth-child(4) { animation-delay: 0.2s; }
+  .bento-card-animate:nth-child(5) { animation-delay: 0.25s; }
+  .bento-card-animate:nth-child(6) { animation-delay: 0.3s; }
 }

@@ -53,12 +53,24 @@ export function UploadDropzone({ onFileSelected, isUploading = false }: UploadDr
       {preview ? (
         <Card className="relative overflow-hidden bg-surface border-border shadow-sm animate-in fade-in zoom-in-95 duration-300">
           <img src={preview} alt="Preview" className="w-full h-auto max-h-[500px] object-contain bg-black/5" />
+          
+          {/* Loading Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
+                <p className="text-sm font-medium">Processing...</p>
+              </div>
+            </div>
+          )}
+          
           <Button
             variant="secondary"
             size="icon"
             onClick={clearPreview}
             className="absolute top-4 right-4 rounded-full shadow-md hover:bg-destructive hover:text-destructive-foreground transition-colors"
             aria-label="Remove image"
+            disabled={isUploading}
           >
             <X className="w-4 h-4" />
           </Button>
@@ -98,15 +110,15 @@ export function UploadDropzone({ onFileSelected, isUploading = false }: UploadDr
                 <ImageIcon className="w-10 h-10 text-muted-foreground group-hover:text-primary transition-colors" />
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-xl font-semibold text-foreground">
-                {isUploading ? 'Uploading...' : 'Drop your UI image here'}
+                {isUploading ? 'Analyzing your design...' : 'Drop your UI image here'}
               </p>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Support for PNG, JPG. We'll analyze accessibility, colors, and layout.
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Support for PNG, JPG. We'll analyze accessibility, colors, contrast, and layout instantly.
               </p>
             </div>
-            <Button variant="outline" className="mt-2 pointer-events-none">
+            <Button variant="outline" className="mt-2 pointer-events-none rounded-full px-6">
               Browse Files
             </Button>
           </div>

@@ -1,5 +1,5 @@
 {
-  "name": "IIC-Hackathon2025",
+  "name": "lumi",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -27,6 +27,7 @@
     "colorthief": "^2.6.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.554.0",
+    "nanoid": "^5.1.6",
     "next": "16.0.3",
     "next-themes": "^0.4.6",
     "react": "19.2.0",

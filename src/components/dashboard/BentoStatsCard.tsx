@@ -27,36 +27,41 @@ export function BentoStatsCard({
   className,
 }: BentoStatsCardProps) {
   const getTrendIcon = () => {
-    if (trend === "up") return <TrendingUp className="w-3 h-3" />;
-    if (trend === "down") return <TrendingDown className="w-3 h-3" />;
-    return <Minus className="w-3 h-3" />;
+    if (trend === "up") return <TrendingUp className="w-3.5 h-3.5" />;
+    if (trend === "down") return <TrendingDown className="w-3.5 h-3.5" />;
+    return <Minus className="w-3.5 h-3.5" />;
   };
 
   const getTrendColor = () => {
-    if (trend === "up") return "text-green-500";
-    if (trend === "down") return "text-red-500";
+    if (trend === "up") return "text-green-500 dark:text-green-400";
+    if (trend === "down") return "text-red-500 dark:text-red-400";
     return "text-muted-foreground";
   };
 
   return (
-    <div className={cn("flex flex-col h-full justify-between", className)}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground font-medium">{title}</p>
-          <p className="text-3xl font-bold tracking-tight">{value}</p>
+    <div className={cn("flex flex-col h-full justify-between gap-3", className)}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 flex-1">
+          <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">{title}</p>
+          <p className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text">{value}</p>
         </div>
         {icon && (
-          <div className="p-3 rounded-xl bg-primary/5 text-primary">{icon}</div>
+          <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
+            {icon}
+          </div>
         )}
       </div>
 
       {(change || description) && (
-        <div className="mt-4 flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs">
           {change && (
             <div
               className={cn(
-                "flex items-center gap-1 font-medium",
-                getTrendColor()
+                "flex items-center gap-1 font-semibold px-2 py-1 rounded-full",
+                getTrendColor(),
+                trend === "up" && "bg-green-500/10",
+                trend === "down" && "bg-red-500/10",
+                trend === "neutral" && "bg-muted"
               )}
             >
               {getTrendIcon()}
@@ -67,7 +72,7 @@ export function BentoStatsCard({
             </div>
           )}
           {description && (
-            <span className="text-muted-foreground">{description}</span>
+            <span className="text-muted-foreground font-medium">{description}</span>
           )}
           {change?.label && (
             <span className="text-muted-foreground">{change.label}</span>
