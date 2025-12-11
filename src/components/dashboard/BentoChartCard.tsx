@@ -22,6 +22,7 @@ export function BentoChartCard({
 }: BentoChartCardProps) {
   return (
     <div className={cn("flex flex-col h-full", className)}>
+      
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
