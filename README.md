@@ -45,7 +45,6 @@ A production-ready MVP that analyzes UI screenshots for WCAG compliance, accessi
 
 - Node.js 18+ 
 - npm, yarn, pnpm, or bun
-- Cloudinary account (free tier works)
 
 ### Installation
 
@@ -69,16 +68,8 @@ cp .env.example .env.local
 
 Edit `.env.local` with your credentials:
 ```env
-CLOUDINARY_CLOUD_NAME=your_cloud_name_here
-CLOUDINARY_API_KEY=your_api_key_here
-CLOUDINARY_API_SECRET=your_api_secret_here
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
-
-**Get Cloudinary credentials:**
-1. Sign up at [cloudinary.com](https://cloudinary.com)
-2. Go to Dashboard
-3. Copy Cloud Name, API Key, and API Secret
 
 **Get Gemini API key (Optional but recommended for AI insights):**
 1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
@@ -106,7 +97,6 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 - **AI Analysis:** Google Gemini 1.5 Flash
 - **OCR:** Tesseract.js 6.0
 - **Image Processing:** Sharp 0.34
-- **Storage:** Cloudinary 2.8
 - **Color Analysis:** TinyColor2, ColorThief
 - **Icons:** Lucide React
 - **Theme:** next-themes
@@ -117,7 +107,6 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 src/
 ├── app/
 │   ├── api/
-│   │   ├── upload/route.ts      # Image upload & Sharp processing
 │   │   ├── ocr/route.ts          # Tesseract.js text extraction
 │   │   ├── palette/route.ts      # Color palette extraction
 │   │   └── analysis/route.ts     # Full analysis pipeline
@@ -149,22 +138,6 @@ src/
 ```
 
 ## 🎨 API Endpoints
-
-### POST `/api/upload`
-Upload and process image with Sharp, store in Cloudinary.
-
-**Request:** `multipart/form-data` with `file` field  
-**Response:** 
-```json
-{
-  "success": true,
-  "secureUrl": "https://...",
-  "publicId": "...",
-  "width": 1920,
-  "height": 1080,
-  "format": "png"
-}
-```
 
 ### POST `/api/ocr`
 Extract text using Tesseract.js.
@@ -203,12 +176,8 @@ git push origin main
 2. **Deploy to Vercel**
    - Visit [vercel.com](https://vercel.com)
    - Import your GitHub repository
-   - Add environment variables in Vercel dashboard
+   - Add environment variables in Vercel dashboard (GEMINI_API_KEY)
    - Deploy!
-
-3. **Environment Variables in Vercel**
-   - Go to Project Settings → Environment Variables
-   - Add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 
 ### Other Platforms
 
