@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@pdfcn": "https://pdfcn.dev/r/{name}.json"
+  }
 }

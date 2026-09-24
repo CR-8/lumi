@@ -36,7 +36,6 @@ export function analyzeSizing(): SizingAnalysis {
   const paddingIssues: string[] = [];
 
   // Analyze alignment consistency (simplified heuristic)
-  const alignmentScore = 85; // Base score
   if (clickableRegions.length > 0) {
     const inconsistentSpacing =
       clickableRegions.length > 5 ? Math.floor(Math.random() * 3) : 0; // Simplified detection

@@ -1,4 +1,4 @@
-import { HierarchyAnalysis } from "./types";
+import { HierarchyAnalysis, OCRResult } from "./types";
 
 /**
  * Analyze information hierarchy
@@ -7,7 +7,7 @@ export function analyzeHierarchy(imageDimensions: {
   width: number;
   height: number;
 }): HierarchyAnalysis {
-  const words: any[] = [];
+  const words: OCRResult["words"] = [];
 
   // Calculate text sizes
   const textSizes = words.map((word) => ({

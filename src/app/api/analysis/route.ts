@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractPalette } from "@/lib/palette";
-import { processImage } from "@/lib/image";
+import { measureImage, processImage } from "@/lib/image";
 import {
   analyzeContrast,
   generateWCAGAnalysis,
@@ -17,16 +17,15 @@ import {
   analyzeTheme,
   analyzeResponsiveness,
 } from "@/lib/theme";
-import { analyzeUIWithGemini } from "@/lib/gemini";
+import { analyzeUI } from "@/lib/ai";
 import { AnalysisResult, OverallScore } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const useGemini = formData.get("useGemini") === "true";
+    const file = formData.get("file");
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
@@ -35,13 +34,13 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const processed = await processImage(buffer);
 
-    // Run Gemini analysis if enabled and API key is available
-    let geminiAnalysis;
-    if (useGemini && process.env.GEMINI_API_KEY) {
+    // AI analysis via OpenRouter when configured; heuristics below always run
+    let aiAnalysis;
+    if (process.env.OPENROUTER_API_KEY) {
       try {
-        geminiAnalysis = await analyzeUIWithGemini(processed.buffer);
+        aiAnalysis = await analyzeUI(processed.buffer);
       } catch (error) {
-        console.error("Gemini analysis failed:", error);
+        console.error("AI analysis failed:", error);
       }
     }
 
@@ -161,13 +160,14 @@ export async function POST(request: NextRequest) {
       audience: audienceAnalysis,
       theme: themeAnalysis,
       responsiveness: responsivenessAnalysis,
-      gemini: geminiAnalysis,
+      ai: aiAnalysis,
+      metrics: await measureImage(buffer),
     };
 
     return NextResponse.json({
       success: true,
       analysis: result,
-      geminiEnabled: !!geminiAnalysis,
+      aiEnabled: !!aiAnalysis,
     });
   } catch (error) {
     console.error("Analysis error:", error);

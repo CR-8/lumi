@@ -1,9 +1,11 @@
-import { KeyboardAnalysis } from "./types";
+import { KeyboardAnalysis, OCRResult } from "./types";
+
+type Region = { element: string; bbox: OCRResult["words"][number]["bbox"] };
 
 /**
  * Predict clickable regions (mock implementation without OCR)
  */
-export function predictClickableRegions(): { element: string; bbox: any }[] {
+export function predictClickableRegions(): Region[] {
   // Return empty array since OCR is removed
   return [];
 }
@@ -12,7 +14,7 @@ export function predictClickableRegions(): { element: string; bbox: any }[] {
  * Simulate tab order based on visual position
  */
 export function simulateTabOrder(
-  regions: { element: string; bbox: any }[]
+  regions: Region[]
 ): { element: string; tabIndex: number }[] {
   // Sort by vertical position first, then horizontal
   const sorted = [...regions].sort((a, b) => {
@@ -31,7 +33,7 @@ export function simulateTabOrder(
  * Detect missing focus states
  */
 export function detectMissingFocusStates(
-  regions: { element: string; bbox: any }[]
+  regions: Region[]
 ): string[] {
   // In a real implementation, this would analyze CSS or visual indicators
   // For MVP, return a mock check

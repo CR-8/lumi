@@ -16,15 +16,17 @@ export async function extractPalette(buffer: Buffer): Promise<PaletteResult> {
     // Sample colors and find dominant ones
     const colorMap = new Map<string, number>();
     
-    for (let i = 0; i < data.length; i += 4 * 10) { // Sample every 10th pixel
+    // Sample every 10th pixel; PNGs arrive with 3 or 4 channels
+    for (let i = 0; i < data.length; i += info.channels * 10) {
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
       
       // Quantize colors to reduce variations (group similar colors)
-      const quantizedR = Math.round(r / 32) * 32;
-      const quantizedG = Math.round(g / 32) * 32;
-      const quantizedB = Math.round(b / 32) * 32;
+      // Clamp: 255 would round up to 256 and overflow the hex conversion
+      const quantizedR = Math.min(255, Math.round(r / 32) * 32);
+      const quantizedG = Math.min(255, Math.round(g / 32) * 32);
+      const quantizedB = Math.min(255, Math.round(b / 32) * 32);
       
       const hex = rgbToHex(quantizedR, quantizedG, quantizedB);
       colorMap.set(hex, (colorMap.get(hex) || 0) + 1);

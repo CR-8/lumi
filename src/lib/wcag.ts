@@ -169,6 +169,6 @@ export function checkColorBlindSafety(colors: string[]): number {
     }
   }
 
-  const avgDifference = differences.reduce((a, b) => a + b, 0) / differences.length;
+  const avgDifference = differences.reduce((a, b) => a + b, 0) / differences.length || 0;
   return Math.min(avgDifference * 100, 100);
 }

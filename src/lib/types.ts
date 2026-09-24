@@ -13,10 +13,26 @@ export interface AnalysisResult {
   audience: AudienceAnalysis;
   theme: ThemeAnalysis;
   responsiveness: ResponsivenessAnalysis;
-  gemini?: GeminiAnalysis;
+  ai?: AIAnalysis;
+  metrics?: ImageMetrics;
 }
 
-export interface GeminiAnalysis {
+/** Deterministic measurements taken from the screenshot's pixels */
+export type ImageMetrics = {
+  width: number;
+  height: number;
+  /** Share of the canvas within one luminance step of the dominant background, 0-1 */
+  whitespace: number;
+  /** Share of pixels on a hard edge (text, borders, icons), 0-1 */
+  edgeDensity: number;
+  /** Distinct colors covering at least 0.5% of the canvas */
+  colorCount: number;
+  dominant: string;
+  /** Each significant color against the dominant background */
+  paletteContrast: { color: string; share: number; ratio: number }[];
+};
+
+export interface AIAnalysis {
   uiType: string;
   designSystem: string;
   industryPrediction: string[];
@@ -66,10 +82,12 @@ export interface GeminiAnalysis {
     wcagViolation: string;
     suggestion: string;
   }>;
-  accessibilityIssues: string[];
+  wcagCriteria: WCAGCriterion[];
+  contrastPairs: ContrastPair[];
+  accessibilityIssues: AccessibilityIssue[];
   strengths: string[];
   weaknesses: string[];
-  recommendations: string[];
+  recommendations: Recommendation[];
   targetAudienceMatch: string;
   summary: {
     verdict: string;
@@ -81,6 +99,44 @@ export interface GeminiAnalysis {
     rating: number;
   };
 }
+
+export type Severity = "critical" | "serious" | "moderate" | "minor";
+export type Level = "high" | "medium" | "low";
+
+export type WCAGCriterion = {
+  id: string;
+  name: string;
+  level: "A" | "AA" | "AAA";
+  status: "pass" | "fail" | "review";
+  finding: string;
+};
+
+/** Colors come from the model; ratio and pass flags are computed by Lumi. */
+export type ContrastPair = {
+  element: string;
+  foreground: string;
+  background: string;
+  largeText: boolean;
+  ratio: number;
+  passesAA: boolean;
+  passesAAA: boolean;
+};
+
+export type AccessibilityIssue = {
+  title: string;
+  severity: Severity;
+  wcag: string;
+  element: string;
+  description: string;
+  fix: string;
+};
+
+export type Recommendation = {
+  title: string;
+  detail: string;
+  priority: Level;
+  effort: Level;
+};
 
 export interface WCAGAnalysis {
   score: "AA" | "AAA" | "FAIL";

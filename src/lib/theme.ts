@@ -6,6 +6,7 @@ import {
   AudienceAnalysis,
   ThemeAnalysis,
   ResponsivenessAnalysis,
+  OCRResult,
 } from "./types";
 
 /**
@@ -64,11 +65,11 @@ export function suggestUISchemes(palette: string[]): UISchemesSuggestions {
  */
 export function analyzeContent(): ContentSuggestions {
   const text = "";
-  const words: any[] = [];
+  const words: OCRResult["words"] = [];
 
   // Detect headings (larger text)
   const sizes = words.map((w) => w.bbox.y1 - w.bbox.y0);
-  const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+  const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length || 0;
   const headings = words.filter((w) => w.bbox.y1 - w.bbox.y0 > avgSize * 1.5);
 
   const headingSuggestions = headings.map((h) => ({
@@ -149,7 +150,7 @@ export function analyzeTypography(): TypographyAnalysis {
     { primary: "Roboto", secondary: "Roboto", score: 90 },
   ];
 
-  const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length;
+  const avgSize = sizes.reduce((a, b) => a + b, 0) / sizes.length || 0;
   const readabilityScore = avgSize >= 20 ? 90 : Math.max(50, avgSize * 4);
 
   const sizeSuggestions = uniqueSizes
