@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "Image must be 10 MB or smaller" }, { status: 413 });
+    }
 
     // Convert to buffer and process image
     const bytes = await file.arrayBuffer();
